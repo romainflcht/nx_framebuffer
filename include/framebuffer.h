@@ -15,6 +15,11 @@
 
 #define CHANNEL_COUNT 4
 
+// _ MACROS ____________________________________________________________________
+#define FB_HANDLER_ISINVALID(x)   (!x)
+#define FB_DATA_ISINVALID(x)      (!(x->data))
+#define FB_ISINVALID(x)           (FB_HANDLER_ISINVALID(x) || FB_DATA_ISINVALID(x))
+
 // _ ENUMERATION DEFINITIONS ___________________________________________________
 
 typedef enum fb_buffering_mode_t
@@ -51,14 +56,5 @@ RETURN_STATUS_t fb_handler_init(FRAMEBUFFER_t* handler, NWindow* nwin);
 /// @param fb pointer the the framebuffer structure. 
 /// @return error code described in \ref common.h. 
 RETURN_STATUS_t retrieve_fb(FRAMEBUFFER_t* fb); 
-
-
-RETURN_STATUS_t fill_screen(FRAMEBUFFER_t* fb, uint32_t color);
-
-
-RETURN_STATUS_t draw_pixel(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, COLOR_t color); 
-
-
-RETURN_STATUS_t draw_line(FRAMEBUFFER_t* fb, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, COLOR_t color); 
 
 #endif
