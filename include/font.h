@@ -52,7 +52,7 @@
 #define FONT_CHAR_WIDTH  8
 #define FONT_CHAR_HEIGHT 16
 
-// * __ DEFINITIONS ____________________________________________________________
+// _ DEFINITIONS _______________________________________________________________
 extern unsigned char FONT[256 * 16]; 
 
 #endif
