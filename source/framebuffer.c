@@ -1,12 +1,17 @@
 #include "framebuffer.h"
 
 
-RETURN_STATUS_t fb_handler_init(FRAMEBUFFER_t* fb, NWindow* nwin)
+RETURN_STATUS_t fb_handler_init(FRAMEBUFFER_t* fb)
 {
     Result retval; 
 
+    // Get the default native window. 
+    fb->nwin = nwindowGetDefault();
+    if (!nwindowIsValid(fb->nwin))
+        return FAILURE; 
+
     // Create a linear framebuffer. 
-    retval = framebufferCreate(&(fb->handler), nwin, FB_WIDTH, FB_HEIGHT, PIXEL_FORMAT_RGBX_8888, FB_COUNT);
+    retval = framebufferCreate(&(fb->handler), fb->nwin, FB_WIDTH, FB_HEIGHT, PIXEL_FORMAT_RGBX_8888, FB_COUNT);
     if (R_FAILED(retval))
         return FAILURE; 
     
@@ -24,9 +29,9 @@ RETURN_STATUS_t fb_handler_init(FRAMEBUFFER_t* fb, NWindow* nwin)
 }
 
 
-RETURN_STATUS_t retrieve_fb(FRAMEBUFFER_t* fb)
+RETURN_STATUS_t fb_retrieve(FRAMEBUFFER_t* fb)
 {
-    if (FB_HANDLER_ISINVALID(fb))
+    if (FB_STRUCT_ISINVALID(fb))
         return FAILURE; 
 
     fb->data = framebufferBegin(&(fb->handler), &(fb->stride));
@@ -35,3 +40,33 @@ RETURN_STATUS_t retrieve_fb(FRAMEBUFFER_t* fb)
 
     return SUCCESS; 
 }
+
+
+RETURN_STATUS_t fb_render(FRAMEBUFFER_t* fb)
+{
+    if (FB_ISINVALID(fb))
+        return FAILURE;
+
+    // Render the last retrieved framebuffer and free it. 
+    framebufferEnd(&(fb->handler)); 
+    fb->data = NULL; 
+
+    return SUCCESS;
+}
+
+
+RETURN_STATUS_t fb_close(FRAMEBUFFER_t* fb)
+{
+    if (FB_ISINVALID(fb))
+        return FAILURE;
+
+    else if (FB_NWIN_ISINVALID(fb))
+        return FAILURE; 
+
+    // Free framebuffer handler and native window. 
+    framebufferClose(&(fb->handler));
+    nwindowClose(fb->nwin);
+
+    return SUCCESS; 
+}
+

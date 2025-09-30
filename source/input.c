@@ -95,15 +95,18 @@ void _pressed_key_action(INPUT_ID_t key_id)
             break;
         case STICK_L_LEFT:
             // Action pour STICK_L_LEFT
+            xx -= 10; 
             break;
         case STICK_L_UP:
-            // Action pour STICK_L_UP
+            yy -= 10; 
             break;
         case STICK_L_RIGHT:
             // Action pour STICK_L_RIGHT
+            xx += 10; 
             break;
         case STICK_L_DOWN:
             // Action pour STICK_L_DOWN
+            yy += 10; 
             break;
         case STICK_R_LEFT:
             // Action pour STICK_R_LEFT
