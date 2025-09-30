@@ -4,8 +4,12 @@
 
 #include "common.h"
 #include "timer.h"
+#include "input.h"
 #include "framebuffer.h"
 #include "graphic.h"
+
+// Handle app exit, on key press. 
+bool app_is_running = true; 
 
 
 int main(int argc, char* argv[])
@@ -16,8 +20,7 @@ int main(int argc, char* argv[])
 
     TIMER_t         timer; 
 
-    PadState        pad;
-    uint64_t        key; 
+    INPUT_t         input; 
     
     // Get the default native window. 
     nwin = nwindowGetDefault();
@@ -29,29 +32,30 @@ int main(int argc, char* argv[])
         return FAILURE; 
 
     // Initialize input handler. 
-    padConfigureInput(1, HidNpadStyleSet_NpadStandard);
-    padInitializeDefault(&pad);
+    init_input(&input);
 
     while (appletMainLoop())
     {
         // Timer that calculate how much time to wait between each frame to 
         // reach TARGET_FPS
         start_timer(&timer);
+
+        // Update key and joystick information and execute actions depending on 
+        // which key is pressed/actioned
+        update_input(&input); 
+        process_pressed_key(&input); 
+
+        if(!app_is_running)
+            break; 
         
         // Retrieve the framebuffer. 
         retrieve_fb(&fb); 
 
-        padUpdate(&pad);
-        key = padGetButtonsDown(&pad);
-
-        if (key & HidNpadButton_Plus)
-            break; 
-
 
         // Clear the screen. 
-        fill_screen(&fb, BLACK);
+        fill_screen(&fb, WHITE);
 
-        print_str(&fb, "Hello world", 0, 0, WHITE, BLACK);
+        print_str(&fb, "Hello world", 0, 0, BLACK, WHITE);
         
         // Stop the timer and wait the calculated time.
         stop_timer(&timer); 
@@ -61,6 +65,7 @@ int main(int argc, char* argv[])
         framebufferEnd(&(fb.handler));
     }
 
+    nwindowClose(nwin); 
     framebufferClose(&(fb.handler));
     return SUCCESS;
 }
