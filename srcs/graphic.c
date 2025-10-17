@@ -20,18 +20,10 @@ RETURN_STATUS_t draw_pixel(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, COLOR_t co
 
 RETURN_STATUS_t fill_screen(FRAMEBUFFER_t* fb, COLOR_t color)
 {
-    uint32_t x; 
-    uint32_t y; 
-
-
     if (FB_ISINVALID(fb))
         return FAILURE; 
 
-    for (y = 0; y < FB_HEIGHT; y += 1)
-    {
-        for (x = 0; x < FB_WIDTH; x += 1)
-            draw_pixel(fb, x, y, color); 
-    }
+    memset(fb->data, color, sizeof(uint32_t) * FB_HEIGHT * FB_WIDTH);
 
     return SUCCESS; 
 }
@@ -76,6 +68,49 @@ RETURN_STATUS_t draw_line(FRAMEBUFFER_t* fb, uint32_t x0, uint32_t y0, uint32_t 
 }
 
 
+RETURN_STATUS_t draw_circle(FRAMEBUFFER_t *fb, uint32_t cx, uint32_t cy, uint32_t r, COLOR_t color)
+{
+    int32_t x; 
+    int32_t y;
+    int32_t p; 
+
+    if (FB_ISINVALID(fb))
+    return FAILURE; 
+
+    // explaination of how this algorithm works are available here: 
+    // https://www.youtube.com/watch?v=hpiILbMkF9w from NoBS Code. 
+    x = 0; 
+    y = -r; 
+    p = -r; 
+
+    while (x < -y)
+    {
+        if (p > 0)
+        {
+            y += 1; 
+            p += 2 * (x + y) + 1; 
+        }
+
+        else 
+            p += 2 * x + 1;  
+
+        draw_pixel(fb, cx + x, cy + y, color); 
+        draw_pixel(fb, cx - x, cy + y, color); 
+        draw_pixel(fb, cx + x, cy - y, color); 
+        draw_pixel(fb, cx - x, cy - y, color); 
+        draw_pixel(fb, cx + y, cy + x, color); 
+        draw_pixel(fb, cx + y, cy - x, color); 
+        draw_pixel(fb, cx - y, cy + x, color); 
+        draw_pixel(fb, cx - y, cy - x, color); 
+        x += 1; 
+    }
+    
+
+
+    return SUCCESS; 
+}
+
+
 RETURN_STATUS_t print_char(FRAMEBUFFER_t* fb, char c, uint32_t x, uint32_t y, COLOR_t fgcolor, COLOR_t bgcolor)
 {
     unsigned char*  char_addr; 
@@ -84,9 +119,6 @@ RETURN_STATUS_t print_char(FRAMEBUFFER_t* fb, char c, uint32_t x, uint32_t y, CO
     int             j; 
 
     if (FB_ISINVALID(fb))
-        return FAILURE; 
-
-    else if (COORD_ISINVALID(x, y))
         return FAILURE; 
 
     // Get the address of the first byte of the character. 
@@ -134,9 +166,6 @@ RETURN_STATUS_t print_str(FRAMEBUFFER_t* fb, char* str, uint32_t x, uint32_t y, 
     else if (FB_ISINVALID(fb))
         return FAILURE; 
 
-    else if (COORD_ISINVALID(x, y))
-        return FAILURE; 
-
     row = x; 
     line = y; 
 
@@ -162,6 +191,26 @@ RETURN_STATUS_t print_str(FRAMEBUFFER_t* fb, char* str, uint32_t x, uint32_t y, 
 }
 
 
+uint32_t fb_printf(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, COLOR_t fgcolor, COLOR_t bg_color, char* format, ... )
+{
+    char*   str; 
+    size_t  char_count;
+    va_list args;
+    
+    va_start(args, format);
+
+    // Allocate and format the string and print it. 
+    char_count = vasprintf(&str, format, args); 
+    print_str(fb, str, x, y, fgcolor, bg_color); 
+    
+    // Free allocated ressources.
+    va_end(args);
+    free(str); 
+
+    return char_count; 
+}
+
+
 RETURN_STATUS_t print_img(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint32_t* img)
 {
     uint32_t cur_x; 
@@ -170,15 +219,19 @@ RETURN_STATUS_t print_img(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, uint32_t w,
     if (FB_ISINVALID(fb))
         return FAILURE; 
 
-    else if (COORD_ISINVALID(x, y))
-        return FAILURE; 
+    
 
     // Loop through each pixel of the image and draw it on the screen. 
     for (cur_y = 0; cur_y < h; cur_y += 1)
     {
         for (cur_x = 0; cur_x < w; cur_x += 1)
+        {
+            if (COORD_ISINVALID(x + cur_x, y + cur_y))
+                continue;
+
             // NX is big-endian which means that RGBA format is ABGR. 
             draw_pixel(fb, x + cur_x, y + cur_y, img[cur_y * w + cur_x]); 
+        }
     }
 
     return SUCCESS; 

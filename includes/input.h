@@ -7,6 +7,8 @@
 
 // _ EXTERN DEFINITIONS ________________________________________________________
 extern bool app_is_running; ///< Used to exit app on key press. 
+extern uint32_t xx; 
+extern uint32_t yy; 
 
 
 // _ ENUMERATION DEFINITIONS ___________________________________________________
