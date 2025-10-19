@@ -3,12 +3,17 @@ TARGET        = main
 ELF_NAME      = nx_framebuffer
 NRO_NAME      = $(ELF_NAME)
 
+ROMFS_NAME    = romfs.img
+
 
 # _ DIRECTORIES ________________________________________________________________
 SRCS_DIR = srcs
 OBJS_DIR = objs
 INCS_DIR = includes
+LIBS_DIR = libs
 BIN_DIR  = bin
+
+ROMFS_DIR = romfs
 
 # _ FILES ______________________________________________________________________
 SRCS = main.c font.c framebuffer.c graphic.c input.c timer.c
@@ -17,19 +22,21 @@ OBJS = $(addprefix $(OBJS_DIR)/,$(SRCS:.c=.o))
 
 # _ COMPILER OPT _______________________________________________________________
 ARCH          = -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
-LIBS          = -lnx
+LIBS          = -lnx -lcbmp
 
 CC            = aarch64-none-elf-gcc
 
-COMPILE_FLAGS = -I$(INCS_DIR)                           \
-                -I$(DEVKITPRO)/libnx/include            \
-                -I$(DEVKITPRO)/portlibs/switch/include  \
-                -g -Wall -O2 -ffunction-sections $(ARCH)
+COMPILE_FLAGS = -I$(INCS_DIR)                            \
+                -I$(DEVKITPRO)/libnx/include             \
+                -I$(DEVKITPRO)/portlibs/switch/include   \
+                -g -Wall -Werror -O2 -ffunction-sections \
+                $(ARCH)
 
-LINK_FLAGS    = -L$(DEVKITPRO)/libnx/lib                \
-                -march=armv8-a+crc+crypto               \
-                -mtune=cortex-a57                       \
-                -specs=$(DEVKITPRO)/libnx/switch.specs  \
+LINK_FLAGS    = -L$(DEVKITPRO)/libnx/lib                 \
+                -L$(LIBS_DIR)                            \
+                -march=armv8-a+crc+crypto                \
+                -mtune=cortex-a57                        \
+                -specs=$(DEVKITPRO)/libnx/switch.specs   \
                 $(LIBS)
 
 # _ FTP ________________________________________________________________________
@@ -59,10 +66,15 @@ install : all
 	@lftp $(FTP_URL) -p $(FTP_PORT) -e "put $(BIN_DIR)/$(NRO_NAME).nro ; exit"
 
 # ENCAPSULATION PROCEDURE (CONVERT .ELF TO .NRO FILE). 
-$(BIN_DIR)/$(NRO_NAME).nro: $(BIN_DIR)/$(ELF_NAME)
-	@echo "\n$(BLUE)~ENCAPSULATE $(RST)$(BOLD)$^.elf$(RST)$(BLUE) TO NINTENDO SWITCH ROM $(RST)$(BOLD)$@$(RST)"
-	@elf2nro $^.elf $@
+$(BIN_DIR)/$(NRO_NAME).nro: $(BIN_DIR)/$(ELF_NAME) $(BIN_DIR)/$(ROMFS_NAME)
+	@echo "\n$(BLUE)~ENCAPSULATE $(RST)$(BOLD)$<.elf$(RST)$(BLUE) TO NINTENDO SWITCH ROM $(RST)$(BOLD)$@$(RST)"
+	@elf2nro $<.elf $@ --romfs=$(BIN_DIR)/$(ROMFS_NAME)
 	@echo "$(GREEN)-> FINISHED!$(RST)"
+
+# GENERATE ROMFS IMG TO INCLUDE DURING ENCAPSULATION. 
+$(BIN_DIR)/$(ROMFS_NAME): 
+	@echo "\n$(BLUE)~GENERATING ROMFS $(RST)$(BOLD)$@$(RST)$(BLUE) FROM $(RST)$(BOLD)$(ROMFS_DIR)$(RST)"
+	@build_romfs $(ROMFS_DIR) $(BIN_DIR)/$(ROMFS_NAME)
 
 # LINKING ALL OBJECTS FILE FROM OBJS DIRECTORY. 
 $(BIN_DIR)/$(ELF_NAME): $(OBJS) | mkdir_bin
@@ -90,7 +102,7 @@ mkdir_bin:
 
 clean:
 	@echo "$(BOLD)$(RED)~ CLEANING BIN DIRECTORY... ~"
-	@rm -f $(BIN_DIR)/*.elf $(BIN_DIR)/*.nro
+	@rm -f $(BIN_DIR)/*.elf $(BIN_DIR)/*.nro $(BIN_DIR)/*.img 
 	@echo "$(BOLD)$(GREEN)~ DONE ~"
 
 	@echo "$(BOLD)$(RED)~ CLEANING OBJS DIRECTORY... ~"

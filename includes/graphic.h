@@ -12,6 +12,7 @@
 #include "common.h"
 #include "color.h"
 #include "font.h"
+#include "cbmp.h"
 
 // _ DEFINES ___________________________________________________________________
 
@@ -53,8 +54,15 @@ RETURN_STATUS_t draw_pixel(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, COLOR_t co
 RETURN_STATUS_t draw_line(FRAMEBUFFER_t* fb, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, COLOR_t color); 
 
 
+/// @fn RETURN_STATUS_t draw_circle(FRAMEBUFFER_t *fb, uint32_t x, uint32_t y, uint32_t r, COLOR_t color); 
+/// @brief use the midpoint algorithm to draw a circle. 
+/// @param fb    framebuffer where to draw the circle. 
+/// @param x     x coordinate of the center of the circle. 
+/// @param y     y coordinate of the center of the circle. 
+/// @param r     radius of the circle. 
+/// @param color color of the circle. 
+/// @return      error code described in \ref common.h.
 RETURN_STATUS_t draw_circle(FRAMEBUFFER_t *fb, uint32_t x, uint32_t y, uint32_t r, COLOR_t color); 
-
 
 
 /// @fn RETURN_STATUS_t print_char(FRAMEBUFFER_t* fb, char c, uint32_t x, uint32_t y, COLOR_t fgcolor, COLOR_t bgcolor); 
@@ -67,6 +75,7 @@ RETURN_STATUS_t draw_circle(FRAMEBUFFER_t *fb, uint32_t x, uint32_t y, uint32_t 
 /// @param bgcolor background color. 
 /// @return error code described in \ref common.h.
 RETURN_STATUS_t print_char(FRAMEBUFFER_t* fb, char c, uint32_t x, uint32_t y, COLOR_t fgcolor, COLOR_t bgcolor); 
+
 
 /// @fn RETURN_STATUS_t print_str(FRAMEBUFFER_t* fb, char* str, uint32_t x, uint32_t y, COLOR_t fgcolor, COLOR_t bgcolor); 
 /// @brief draws a string on the screen with text wrapping. 
@@ -91,6 +100,7 @@ RETURN_STATUS_t print_str(FRAMEBUFFER_t* fb, char* str, uint32_t x, uint32_t y, 
 /// @return        number of char printed. 
 uint32_t fb_printf(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, COLOR_t fgcolor, COLOR_t bg_color, char* format, ... ); 
 
+
 /// @fn RETURN_STATUS_t print_img(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint32_t* img); 
 /// @brief displays an image contained in an uint32_t array. 
 /// @param fb  framebuffer where to display the image. 
@@ -101,5 +111,28 @@ uint32_t fb_printf(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, COLOR_t fgcolor, C
 /// @param img uint32_t array taht contains pixel data of the image. 
 /// @return    error code described in \ref common.h.
 RETURN_STATUS_t print_img(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint32_t* img); 
+
+
+/// @fn BMP* load_bmp(char* path); 
+/// @brief load a bmp image into a BMP structure. 
+/// @param path path to the bmp. 
+/// @return     the address of the allocated BMP structure. 
+BMP* load_bmp(char* path); 
+
+
+/// @fn void free_bmp(BMP* bmp);
+/// @brief unload a bmp image.
+/// @param bmp the BMP structure to free. 
+void free_bmp(BMP* bmp);
+
+
+/// @fn RETURN_STATUS_t print_bmp(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, const char* path); 
+/// @brief displays a bmp image from its path. 
+/// @param fb   framebuffer where to display the image. 
+/// @param x    x coordinate. 
+/// @param y    y coordinate. 
+/// @param path path to the bmp image. 
+/// @return     error code described in \ref common.h.
+RETURN_STATUS_t print_bmp(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, BMP* bmp); 
 
 #endif

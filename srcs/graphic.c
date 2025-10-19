@@ -219,8 +219,6 @@ RETURN_STATUS_t print_img(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, uint32_t w,
     if (FB_ISINVALID(fb))
         return FAILURE; 
 
-    
-
     // Loop through each pixel of the image and draw it on the screen. 
     for (cur_y = 0; cur_y < h; cur_y += 1)
     {
@@ -237,3 +235,60 @@ RETURN_STATUS_t print_img(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, uint32_t w,
     return SUCCESS; 
 }
 
+
+BMP* load_bmp(char* path)
+{
+    BMP* img; 
+
+    img = bopen(path); 
+    if (!img)
+        return NULL;
+
+    return img; 
+}
+
+
+void free_bmp(BMP* bmp)
+{
+    if (bmp)
+        bclose(bmp); 
+}
+
+
+RETURN_STATUS_t print_bmp(FRAMEBUFFER_t* fb, uint32_t x, uint32_t y, BMP* bmp)
+{
+    uint32_t    height; 
+    uint32_t    width; 
+    uint32_t    cur_x; 
+    uint32_t    cur_y; 
+    uint8_t     r; 
+    uint8_t     g; 
+    uint8_t     b; 
+
+    if (FB_ISINVALID(fb))
+        return FAILURE; 
+
+    else if (!bmp)
+        return FAILURE;
+
+    height = get_height(bmp); 
+    width = get_width(bmp); 
+
+    // Loop through each pixel of the image and draw it on the screen. 
+    for (cur_y = 0; cur_y < height; cur_y += 1)
+    {
+        for (cur_x = 0; cur_x < width; cur_x += 1)
+        {
+            if (COORD_ISINVALID(x + cur_x, y + cur_y))
+                continue;
+
+            // Get pixel from the loaded bmp.
+            get_pixel_rgb(bmp, width - 1 - cur_x, height - 1 - cur_y, &r, &g, &b); 
+            
+            // NX is big-endian which means that RGBA format is ABGR. 
+            draw_pixel(fb, x + cur_x, y + cur_y, RGBA8(r, g, b, 0xFF)); 
+        }
+    }
+
+    return SUCCESS; 
+}
