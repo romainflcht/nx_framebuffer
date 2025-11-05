@@ -13,6 +13,7 @@
 #include "color.h"
 #include "font.h"
 #include "cbmp.h"
+#include "jpeglib/jpeglib.h"
 
 // _ DEFINES ___________________________________________________________________
 

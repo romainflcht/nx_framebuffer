@@ -8,6 +8,7 @@
 #include "framebuffer.h"
 #include "graphic.h"
 #include "cbmp.h"
+#include "jpeglib/jpeglib.h"
 
 // Handle app exit on key press. 
 bool app_is_running = true; 
@@ -21,7 +22,8 @@ int main(int argc, char* argv[])
     FRAMEBUFFER_t   fb; 
     TIMER_t         timer; 
     INPUT_t         input; 
-    BMP*            img; 
+    // BMP*            img; 
+
     
     // Initialize framebuffer handler. 
     retval = fb_handler_init(&fb); 
@@ -35,7 +37,7 @@ int main(int argc, char* argv[])
     if (R_FAILED(rc))
         return FAILURE; 
 
-    img = load_bmp("romfs:/assets/img2.bmp");
+    // img = load_bmp("romfs:/assets/img2.bmp");
 
 
     while (appletMainLoop())
@@ -67,10 +69,11 @@ int main(int argc, char* argv[])
         fb_printf(&fb, 1, 16, BLACK, WHITE, "L_STICK (x): %d", input.left_stick.x); 
         fb_printf(&fb, 1, 32, BLACK, WHITE, "L_STICK (y): %d", input.left_stick.y); 
 
-        print_bmp(&fb, xx, yy, img);
+        // print_bmp(&fb, xx, yy, img);
+
         
 
-        draw_circle(&fb, xx, yy, 50, BLACK); 
+        draw_circle(&fb, xx, yy, 10, BLACK); 
 
         // Stop the timer and wait the calculated time to reach TARGET_FPS.
         stop_timer(&timer); 
@@ -80,7 +83,7 @@ int main(int argc, char* argv[])
     }
 
     // Free ressources and exit. 
-    free_bmp(img);
+    // free_bmp(img);
     fb_close(&fb); 
     romfsExit(); 
     return SUCCESS;

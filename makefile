@@ -22,7 +22,7 @@ OBJS = $(addprefix $(OBJS_DIR)/,$(SRCS:.c=.o))
 
 # _ COMPILER OPT _______________________________________________________________
 ARCH          = -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
-LIBS          = -lnx -lcbmp
+LIBS          = -lnx -lcbmp # -ljpeg
 
 CC            = aarch64-none-elf-gcc
 
